@@ -1,8 +1,15 @@
 import express from 'express';
 import { Campsite } from './models';
+import cors from 'cors';
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
+
+// CORS Configuration
+const options: cors.CorsOptions = {
+  origin: ['http://localhost:3000']
+};
+app.use(cors(options));
 
 const campsites:Campsite[] = [
   {title: "Big Pool", location: {lat: 40.2744767, long: -105.7643305}, datesAvailable: [], elevation: "9,160 ft", detailsLink: "https://www.nps.gov/romo/planyourvisit/upload/072-Big-Pool-2017-2.pdf"},
