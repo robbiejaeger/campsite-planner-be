@@ -1,6 +1,7 @@
 import express from 'express';
 import { Campsite } from './models';
 import cors from 'cors';
+import { readFile } from 'fs/promises';
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
@@ -11,10 +12,24 @@ const options: cors.CorsOptions = {
 };
 app.use(cors(options));
 
-const campsites:Campsite[] = [
-  {title: "Big Pool", location: {lat: 40.285032, long: -105.759724}, datesAvailable: [], elevation: "9,160 ft", detailsLink: "https://www.nps.gov/romo/planyourvisit/upload/072-Big-Pool-2017-2.pdf"},
-  {title: "North Inlet Falls", location: {lat: 40.278834, long: -105.720641}, datesAvailable: [], elevation: "9,540 ft", detailsLink: "https://www.nps.gov/romo/planyourvisit/upload/079-North-Inlet-Falls-2021-1.pdf"}
-];
+// Parse campsites data file
+let campsites:Campsite[] = [];
+
+readFile('./raw_data/Backcountry_Campsites_for_2017.geojson', {encoding: 'utf-8'})
+  .then(fileContents => {
+    const rawSites = JSON.parse(fileContents).features as any[];
+    campsites = rawSites.map(rawSite => {
+      const siteProperties = rawSite.properties;
+      const groupSiteBoolean = siteProperties.GroupSite === "Yes" ? true : false;
+      return {
+        title: siteProperties.Campsite,
+        groupSite: groupSiteBoolean,
+        location: {lat: siteProperties.WGS84_LAT_DD ,long: siteProperties.WGS84_LON_DD},
+        datesAvailable: []
+      };
+    })
+  })
+  .catch(err => console.error('Error reading campsites data file:', err));
 
 app.get('/api/v1/campsites', (_request, response) => {
   response.status(200).json(campsites);
