@@ -6,7 +6,6 @@ export interface Location {
 export interface Campsite {
   title: string,
   location: Location,
+  groupSite: boolean,
   datesAvailable: string[],
-  elevation: string,
-  detailsLink: string
 }
